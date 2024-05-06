@@ -11,19 +11,7 @@
 	<!-- Header start -->
 	<header class="section">
 		<!-- Menu here -->
-		<nav class="navbar" role="navigation" aria-label="main navigation">
-<div class="navbar-brand">
-<!-- navbar items, navbar burger... -->
-</div>
-  <div class="navbar-menu">
-    <a href="/" class="navbar-item">
-      <img src="/_assets/jpg/logo.png"
-    </a>
-    <a href="/" class="navbar-item">Home</a>
-    <a href="/settings" class="navbar-item">Settings</a>
-  </div>
-</nav>
-
+		{% include "_includes/header.njk" %}
 	</header>
 	<!-- Header end -->
 	<!-- Content start -->
@@ -34,13 +22,8 @@
 			</div>
 			<!-- Content -->
 			<div class="content-data">
-			
-			<!-- Cities -->
-			<div class="columns">
-
-			</div>
-			<!-- Cities end -->
-			
+			{% block content %}
+			{% endblock content %}
 			</div>
 			<!-- Content end -->
 		</div>
@@ -48,6 +31,6 @@
 	<!-- Content end -->
 <script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-<script type="module" src="/_assets/js/main.js"></script>
+<script type="module" src="{{ '/_assets/js/main.js' | url }}"></script>
 </body>
 </html>
