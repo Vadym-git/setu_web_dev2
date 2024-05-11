@@ -27,8 +27,44 @@ $(document).ready(function() {
     console.log(currentCityDataDaily);
   });
 
+  $('#cityesList').on('click', '.panel-block', function(event){
+    event.preventDefault();;
+    // Toggle its checked state#
+    let activeCityes = parseCookee()["activeCities"];
+    if (activeCityes == null){
+      activeCityes = [];
+    } else { activeCityes = JSON.parse(activeCityes) }
+    let img = $(this).find("img");
+    if (activeCityes.includes(this.id)){
+      img.attr("src", "https://cdn-icons-png.flaticon.com/128/15526/15526417.png")
+      activeCityes = activeCityes.filter(item => item !== this.id);
+      setCookie("activeCities", JSON.stringify(activeCityes));
+    } else {
+      img.attr("src", "https://cdn-icons-png.flaticon.com/128/5610/5610944.png")
+      activeCityes.push(this.id);
+      setCookie("activeCities", JSON.stringify(activeCityes));
+    }
+  });
+
 
   // functions
+
+  function setSettingsPage(){
+    let citiesList = $('#cityesList');
+    citiesDailyData = parseDailyCitiesData();
+    let cookie = parseCookee();
+    if (cookie["activeCities"] == null){
+      cookie["activeCities"] = [];
+    }
+    Object.keys(citiesDailyData).forEach(key => {
+      let img = "https://cdn-icons-png.flaticon.com/128/15526/15526417.png"
+      if (cookie["activeCities"].includes(key)){
+        img = "https://cdn-icons-png.flaticon.com/128/5610/5610944.png"
+      }
+          citiesList.append(`<div class="panel-block" id="${key}"><label class="checkbox">
+          <img src="${img}" width="20" height="20"/>${key.toUpperCase()}</label></div>`);
+    });
+  }
 
   function setCityPageData() {
     // Get the current URL
@@ -77,14 +113,30 @@ $(document).ready(function() {
     let cookie = parseCookee();
     switch (window.location.pathname){
       case "/":
-      if (cookie["index"] != null){
-        // show selected cities
+      // show cities from the list selection
+      if (cookie["activeCities"] == null){
+        showCities(parseDailyCitiesData());
+        break;
+      }
+      if (cookie["activeCities"].length > 0){
+        let allCities = parseDailyCitiesData();
+        let cities = [];
+        for (const city of Object.keys(allCities)){
+          if (cookie["activeCities"].includes(city)){
+            cities.push(allCities[city]);
+          }
+        }
+        showCities(cities);
       } else {
+        // show all the cities
         showCities(parseDailyCitiesData());
       }
       break;
       case "/city-focus/":
       setCityPageData();
+      break;
+      case "/settings/":
+      setSettingsPage();
       break;
     }
   }
@@ -92,10 +144,13 @@ $(document).ready(function() {
   function parseCookee() {
     // Get the cookie string
     const cookieString = document.cookie;
-    // Split the string into key-value pairs
-    const cookiePairs = cookieString.split(';');
     // Create an object to store cookies
     const cookies = {};
+    // Split the string into key-value pairs
+    if (cookieString.length === 0) {
+      return cookies;
+    }
+    const cookiePairs = cookieString.split(';');
     // Loop through each key-value pair
     for (let i = 0; i < cookiePairs.length; i++) {
       const pair = cookiePairs[i].trim(); // Remove leading/trailing whitespace
@@ -188,10 +243,6 @@ $(document).ready(function() {
       let cityData = data[cityKey]["hourly"];
       let windSpeed = cityData["wind_speed_10m"].slice(24)
       let temperature = cityData["apparent_temperature"].slice(24)
-      // console.log(cityData);
-      // let minTemp = data[cityKey]["daily"]["apparent_temperature_min"];
-      // let sunrise = data[cityKey]["daily"]["sunrise"];
-      // let sunset = data[cityKey]["daily"]["sunset"];
       cities[name] = new CityHourly(temperature, windSpeed);
     }
     return cities;
@@ -203,7 +254,6 @@ $(document).ready(function() {
       dataType: 'json',
       async: false, // Make the request synchronous
     }).responseJSON;
-    // console.log(data);
     const cities = {};
     const dailyDataKeys = Object.keys(data).filter(city => city.toLowerCase().endsWith('daily'));
     for (const cityKey of dailyDataKeys) {
